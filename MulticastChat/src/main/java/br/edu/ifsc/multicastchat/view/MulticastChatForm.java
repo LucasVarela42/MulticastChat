@@ -7,14 +7,15 @@ package br.edu.ifsc.multicastchat.view;
 
 import br.edu.ifsc.multicastchat.controller.MulticastChatController;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
  * @author Aluno
  */
 public class MulticastChatForm extends javax.swing.JFrame {
+
+    private int port = 50000;
+    private int ttl = 1;
 
     private MulticastChatController multicastChat;
 
@@ -24,7 +25,9 @@ public class MulticastChatForm extends javax.swing.JFrame {
     public MulticastChatForm() {
         initComponents();
         try {
-            multicastChat = new MulticastChatController(50000, this.jTextFieldMulticastAddress.getText());
+            multicastChat
+                    = new MulticastChatController(this.jTextFieldMulticastAddress.getText(), port, ttl);
+            System.out.println("Group " + this.jTextFieldMulticastAddress.getText() + ":" + port + " with TTL " + ttl);
         } catch (IOException ex) {
             jTextAreaChat.append("\nError MulticastChat!!\nIOException: " + ex.getMessage() + "\n");
         }
@@ -41,7 +44,9 @@ public class MulticastChatForm extends javax.swing.JFrame {
             try {
                 this.multicastChat.sendMessage(this.jTextFieldMessage.getText());
                 jTextAreaChat.append(this.jTextFieldMulticastAddress.getText() + ": " + this.jTextFieldMessage.getText() + "\n");
+    
                 this.jTextFieldMessage.setText("");
+
             } catch (IOException ex) {
                 this.jTextAreaChat.append("\nError on send message!!\nIOException: " + ex.getMessage() + "\n");
             }

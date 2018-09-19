@@ -9,9 +9,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.net.UnknownHostException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -19,31 +16,44 @@ import java.util.logging.Logger;
  */
 public class MulticastChatController extends Thread {
 
-    private int port;
-    private InetAddress group;
     private MulticastSocket socket;
+    private InetAddress group;
+    private String groupAddress;
+    private int port;
+    private String ip;
+    private int ttl;
     private byte[] data;
     private DatagramPacket msgOut;
     private DatagramPacket msgIn;
     private byte[] buffer;
     private String message;
 
-    public MulticastChatController(int port, String group) throws UnknownHostException, IOException {
+    private volatile boolean running = true;
+
+    public MulticastChatController(String groupAddress, int port, int ttl) throws IOException {
+        this.groupAddress = groupAddress;
         this.port = port;
-        this.group = InetAddress.getByName(group);
-        this.socket = new MulticastSocket(port);
-        start();
+        this.group = InetAddress.getByName(groupAddress);
+        this.ttl = ttl;
+        this.ip = InetAddress.getLocalHost().getHostAddress();
     }
 
     public void logon() throws IOException {
         try {
+            this.socket = new MulticastSocket(port);
+            this.socket.setTimeToLive(ttl);
+
             socket.joinGroup(group);
+            System.out.println("Joined group " + groupAddress + ":" + port);
+            //repeaterController.start();
+            this.start();
         } catch (IOException e) {
             throw new IOException("IOException in logon: " + e.getMessage());
         }
     }
 
     public void logoff() throws IOException {
+        running = false;
         try {
             if (socket.isConnected()) {
                 socket.leaveGroup(group);
@@ -54,22 +64,28 @@ public class MulticastChatController extends Thread {
         if (!socket.isClosed()) {
             socket.close();
         }
+        System.out.println("Left group " + groupAddress + ":" + port);
     }
 
     public void sendMessage(String message) throws IOException {
         this.data = message.getBytes();
         this.msgOut = new DatagramPacket(this.data, this.data.length, this.group, this.port);
         this.socket.send(this.msgOut);
+        System.out.println("Broadcasted message: " + message);
     }
 
     public void receiveMessage() throws IOException {
-        this.buffer = new byte[1000];
-        while (true) {
+        while (running) {
+            this.buffer = new byte[1000];
             this.msgIn = new DatagramPacket(this.buffer, this.buffer.length);
             this.socket.receive(this.msgIn);
             this.message = new String(this.msgIn.getData());
-            System.out.println(message);
+            System.out.println("received message: " + message);
         }
+    }
+
+    public String getMessage() {
+        return message;
     }
 
     @Override
