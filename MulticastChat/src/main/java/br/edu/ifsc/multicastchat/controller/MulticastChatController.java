@@ -22,8 +22,8 @@ public class MulticastChatController extends Thread {
     private int port;
     private String ip;
     private int ttl;
-    private byte[] data;
-    private DatagramPacket msgOut;
+    private byte[] txData;
+    private DatagramPacket txPacket;
     private DatagramPacket msgIn;
     private byte[] buffer;
     private String message;
@@ -36,13 +36,14 @@ public class MulticastChatController extends Thread {
         this.group = InetAddress.getByName(groupAddress);
         this.ttl = ttl;
         this.ip = InetAddress.getLocalHost().getHostAddress();
+        
+        this.socket = new MulticastSocket(port);
+        this.socket.setTimeToLive(ttl);
+
     }
 
     public void logon() throws IOException {
         try {
-            this.socket = new MulticastSocket(port);
-            this.socket.setTimeToLive(ttl);
-
             socket.joinGroup(group);
             System.out.println("Joined group " + groupAddress + ":" + port);
             //repeaterController.start();
@@ -68,9 +69,10 @@ public class MulticastChatController extends Thread {
     }
 
     public void sendMessage(String message) throws IOException {
-        this.data = message.getBytes();
-        this.msgOut = new DatagramPacket(this.data, this.data.length, this.group, this.port);
-        this.socket.send(this.msgOut);
+        this.txData = message.getBytes();
+        this.txPacket = new DatagramPacket(this.txData, this.txData.length, this.group, this.port);
+        this.socket.send(this.txPacket);
+        //Fazer o append aqui
         System.out.println("Broadcasted message: " + message);
     }
 
