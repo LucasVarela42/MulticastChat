@@ -27,15 +27,9 @@ public class MulticastChatForm extends javax.swing.JFrame {
      */
     public MulticastChatForm() {
         initComponents();
-        try {
-            multicastChat
-                    = new MulticastChatController(this.jTextFieldMulticastAddress.getText(), port, ttl);
-            System.out.println("Group " + this.jTextFieldMulticastAddress.getText() + ":" + port + " with TTL " + ttl);
+        textArea = this.jTextAreaChat;
+        
 
-        } catch (IOException ex) {
-            jTextAreaChat.append("\nError MulticastChat!!\nIOException: " + ex.getMessage() + "\n");
-        }
-        this.textArea = this.jTextAreaChat;
     }
 
     private void setButtons(boolean enable) {
@@ -48,7 +42,7 @@ public class MulticastChatForm extends javax.swing.JFrame {
         if (!this.jTextFieldMessage.getText().isEmpty()) {
             try {
                 this.multicastChat.sendMessage(this.jTextFieldMessage.getText());
-                this.jTextAreaChat.append(this.jTextFieldMulticastAddress.getText() + ": " + this.jTextFieldMessage.getText() + "\n");
+                this.jTextAreaChat.append(this.jTextFieldUsername.getText() + ": " + this.jTextFieldMessage.getText() + "\n");
 
                 this.jTextFieldMessage.setText("");
 
@@ -195,7 +189,16 @@ public class MulticastChatForm extends javax.swing.JFrame {
 
     private void jButtonJoinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonJoinActionPerformed
         try {
+            //Instancia o Socket
+            multicastChat
+                    = new MulticastChatController(this.jTextFieldMulticastAddress.getText(), port, ttl);
+            System.out.println("Group " + this.jTextFieldMulticastAddress.getText() + ":" + port + " with TTL " + ttl);
+
+            //Instancia a Thread
+            rxController = new RxController(textArea, multicastChat.getSocket());
+            
             multicastChat.logon();
+            rxController.start();
             setButtons(true);
             jTextAreaChat.append("Wellcome: " + this.jTextFieldUsername.getText() + "\n");
 

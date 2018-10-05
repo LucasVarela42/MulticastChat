@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.util.Arrays;
+import java.net.NetworkInterface;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTextArea;
@@ -24,7 +24,6 @@ public class RxController extends Thread {
     private JTextArea textArea;
     private MulticastSocket socket;
     private DatagramPacket rxPacket;
-   
 
     public RxController(JTextArea textArea, MulticastSocket socket) {
         this.textArea = textArea;
@@ -42,7 +41,11 @@ public class RxController extends Thread {
                 int sourcePort = rxPacket.getPort();
                 String message = new String(rxPacket.getData());
 
-                this.textArea.append("[" + sourceIP + "/" + sourcePort + "]: " + message + "\n");
+                //Fazer if
+                this.textArea.append("[" + sourceIP.getHostAddress() + "/" + sourcePort + "]: " + message + "\n");
+
+                System.out.println("recebeu pacote de " + sourceIP.getHostAddress() + ":" + sourcePort);
+                System.out.println("Mensagem " + message);
             } catch (IOException ex) {
                 Logger.getLogger(RxController.class.getName()).log(Level.SEVERE, null, ex);
             }
