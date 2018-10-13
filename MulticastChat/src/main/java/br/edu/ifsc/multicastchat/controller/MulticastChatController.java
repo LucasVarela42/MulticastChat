@@ -24,10 +24,6 @@ public class MulticastChatController {
     private int ttl;
     private byte[] txData;
     private DatagramPacket txPacket;
-    private DatagramPacket msgIn;
-    private byte[] buffer;
-    private String message;
-
 
     public MulticastChatController(String groupAddress, int port, int ttl) throws IOException {
         this.groupAddress = groupAddress;
@@ -52,21 +48,24 @@ public class MulticastChatController {
             if (socket.isConnected()) {
                 socket.leaveGroup(group);
             }
-
         } catch (IOException e) {
             throw new IOException("IOException in logoff: " + e.getMessage());
         }
-        System.out.println("Left group " + groupAddress + ":" + port);
 
         if (!socket.isClosed()) {
             socket.close();
         }
+        System.out.println("Left group " + groupAddress + ":" + port);
     }
 
     public void sendMessage(String message) throws IOException {
         this.txData = message.getBytes();
-        this.txPacket = new DatagramPacket(this.txData, this.txData.length, this.group, this.port);
-        this.socket.send(this.txPacket);
+        try {
+            this.txPacket = new DatagramPacket(this.txData, this.txData.length, this.group, this.port);
+            this.socket.send(this.txPacket);
+        } catch (IOException e) {
+            throw new IOException("IOException in send message: " + e.getMessage());
+        }
     }
 
     public MulticastSocket getSocket() {

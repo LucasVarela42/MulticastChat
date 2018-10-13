@@ -8,6 +8,8 @@ package br.edu.ifsc.multicastchat.view;
 import br.edu.ifsc.multicastchat.controller.MulticastChatController;
 import br.edu.ifsc.multicastchat.controller.RxController;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JTextArea;
 
 /**
@@ -16,8 +18,8 @@ import javax.swing.JTextArea;
  */
 public class MulticastChatForm extends javax.swing.JFrame {
 
-    private int port = 50001;
-    private int ttl = 1;
+    private final int port = 50000;
+    private final int ttl = 1;
     private static JTextArea textArea;
     private RxController rxController;
     private MulticastChatController multicastChat;
@@ -28,28 +30,6 @@ public class MulticastChatForm extends javax.swing.JFrame {
     public MulticastChatForm() {
         initComponents();
         textArea = this.jTextAreaChat;
-        
-
-    }
-
-    private void setButtons(boolean enable) {
-        jButtonLeave.setEnabled(enable);
-        jButtonSend.setEnabled(enable);
-        jButtonJoin.setEnabled(!enable);
-    }
-
-    private void sendAction() {
-        if (!this.jTextFieldMessage.getText().isEmpty()) {
-            try {
-                this.multicastChat.sendMessage(this.jTextFieldMessage.getText());
-                this.jTextAreaChat.append(this.jTextFieldUsername.getText() + ": " + this.jTextFieldMessage.getText() + "\n");
-
-                this.jTextFieldMessage.setText("");
-
-            } catch (IOException ex) {
-                this.jTextAreaChat.append("\nError on send message!!\nIOException: " + ex.getMessage() + "\n");
-            }
-        }
     }
 
     /**
@@ -79,7 +59,7 @@ public class MulticastChatForm extends javax.swing.JFrame {
 
         jLabel1.setText("Multicast Group Address:");
 
-        jTextFieldMulticastAddress.setText("224.1.1.1");
+        jTextFieldMulticastAddress.setText("224.0.0.22");
 
         jButtonJoin.setText("Join");
         jButtonJoin.addActionListener(new java.awt.event.ActionListener() {
@@ -103,6 +83,8 @@ public class MulticastChatForm extends javax.swing.JFrame {
         jScrollPane1.setViewportView(jTextAreaChat);
 
         jLabel2.setText("Message:");
+
+        jTextFieldMessage.setEnabled(false);
 
         jButtonClose.setText("Close");
         jButtonClose.addActionListener(new java.awt.event.ActionListener() {
@@ -135,22 +117,21 @@ public class MulticastChatForm extends javax.swing.JFrame {
                         .addComponent(jButtonSend)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jButtonClose))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jLabel2)
-                        .addGroup(layout.createSequentialGroup()
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addComponent(jLabelName)
-                                .addComponent(jLabel1))
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(jTextFieldMulticastAddress, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(jButtonJoin, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(2, 2, 2)
-                                    .addComponent(jButtonLeave)
-                                    .addGap(0, 0, Short.MAX_VALUE))
-                                .addComponent(jTextFieldUsername)))))
+                    .addComponent(jLabel2)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabelName)
+                            .addComponent(jLabel1))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jTextFieldMulticastAddress, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButtonJoin, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(2, 2, 2)
+                                .addComponent(jButtonLeave)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(jTextFieldUsername))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -190,20 +171,25 @@ public class MulticastChatForm extends javax.swing.JFrame {
     private void jButtonJoinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonJoinActionPerformed
         try {
             //Instancia o Socket
-            multicastChat
-                    = new MulticastChatController(this.jTextFieldMulticastAddress.getText(), port, ttl);
-            System.out.println("Group " + this.jTextFieldMulticastAddress.getText() + ":" + port + " with TTL " + ttl);
+            multicastChat = new MulticastChatController(
+                    this.jTextFieldMulticastAddress.getText(),
+                    port,
+                    ttl);
 
             //Instancia a Thread
-            rxController = new RxController(textArea, multicastChat.getSocket());
-            
+            rxController = new RxController(
+                    textArea,
+                    multicastChat.getSocket(),
+                    jTextFieldUsername.getText());
+
             multicastChat.logon();
             rxController.start();
+
             setButtons(true);
-            jTextAreaChat.append("Wellcome: " + this.jTextFieldUsername.getText() + "\n");
+            textArea.append(this.jTextFieldUsername.getText() + " entrou no grupo. \n");
 
         } catch (IOException ex) {
-            this.jTextAreaChat.append("\nError join group!!\nIOException: " + ex.getMessage() + "\n");
+            this.textArea.append("\nError join group!!\nIOException: " + ex.getMessage() + "\n");
         }
 
     }//GEN-LAST:event_jButtonJoinActionPerformed
@@ -212,16 +198,30 @@ public class MulticastChatForm extends javax.swing.JFrame {
         try {
             multicastChat.logoff();
             setButtons(false);
-            jTextAreaChat.append("Leave: " + this.jTextFieldUsername.getText() + "\n");
+            textArea.append(this.jTextFieldUsername.getText() + " saiu do grupo. \n");
 
         } catch (IOException ex) {
-            this.jTextAreaChat.append("\nError Leave group!!\nIOException: " + ex.getMessage() + "\n");
+            this.textArea.append("\nError Leave group!!\nIOException: " + ex.getMessage() + "\n");
         }
     }//GEN-LAST:event_jButtonLeaveActionPerformed
 
     private void jButtonSendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSendActionPerformed
-        sendAction();
+        if (!this.jTextFieldMessage.getText().isEmpty()) {
+            try {
+                this.multicastChat.sendMessage(this.jTextFieldMessage.getText());
+                this.jTextFieldMessage.setText("");
+            } catch (IOException ex) {
+                this.textArea.append("\nError on send message!!\nIOException: " + ex.getMessage() + "\n");
+            }
+        }
     }//GEN-LAST:event_jButtonSendActionPerformed
+
+    private void setButtons(boolean enable) {
+        jButtonLeave.setEnabled(enable);
+        jButtonSend.setEnabled(enable);
+        jButtonJoin.setEnabled(!enable);
+        jTextFieldMessage.setEnabled(enable);
+    }
 
     /**
      * @param args the command line arguments

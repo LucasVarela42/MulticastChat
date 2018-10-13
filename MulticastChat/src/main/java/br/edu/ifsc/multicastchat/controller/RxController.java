@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.net.NetworkInterface;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTextArea;
@@ -24,25 +23,26 @@ public class RxController extends Thread {
     private JTextArea textArea;
     private MulticastSocket socket;
     private DatagramPacket rxPacket;
+    private String username;
 
-    public RxController(JTextArea textArea, MulticastSocket socket) {
+    public RxController(JTextArea textArea, MulticastSocket socket, String username) {
         this.textArea = textArea;
         this.socket = socket;
-        this.rxData = new byte[65507];
+        this.username = username;
     }
 
     @Override
     public void run() {
         while (true) {
             try {
+                this.rxData = new byte[65507];
                 this.rxPacket = new DatagramPacket(this.rxData, this.rxData.length);
                 this.socket.receive(this.rxPacket);
                 InetAddress sourceIP = rxPacket.getAddress();
                 int sourcePort = rxPacket.getPort();
                 String message = new String(rxPacket.getData());
 
-                //Fazer if
-                this.textArea.append("[" + sourceIP.getHostAddress() + "/" + sourcePort + "]: " + message + "\n");
+                this.textArea.append("[" + this.username + "]: " + message + "\n");
 
                 System.out.println("recebeu pacote de " + sourceIP.getHostAddress() + ":" + sourcePort);
                 System.out.println("Mensagem " + message);

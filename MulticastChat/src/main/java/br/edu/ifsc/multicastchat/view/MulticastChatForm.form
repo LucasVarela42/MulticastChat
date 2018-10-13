@@ -98,7 +98,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="jTextFieldMulticastAddress">
       <Properties>
-        <Property name="text" type="java.lang.String" value="224.1.1.1"/>
+        <Property name="text" type="java.lang.String" value="224.0.0.22"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="jButtonJoin">
@@ -141,6 +141,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="jTextFieldMessage">
+      <Properties>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="jButtonClose">
       <Properties>
