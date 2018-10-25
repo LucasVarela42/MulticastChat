@@ -6,32 +6,25 @@
 package br.edu.ifsc.multicastchat.view;
 
 import br.edu.ifsc.multicastchat.controller.MulticastChatController;
-import br.edu.ifsc.multicastchat.controller.RxController;
+import br.edu.ifsc.multicastchat.controller.MulticastChatHandle;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 /**
  *
  * @author Aluno
  */
 public class MulticastChatForm extends javax.swing.JFrame {
-
-    private final int port = 50000;
-    private final int ttl = 1;
-    private static JTextArea textArea;
-    private RxController rxController;
-    private MulticastChatController multicastChat;
-
     /**
      * Creates new form MulticastChat
      */
+    private MulticastChatHandle handle;
+
     public MulticastChatForm() {
         initComponents();
-        textArea = this.jTextAreaChat;
     }
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -170,49 +163,48 @@ public class MulticastChatForm extends javax.swing.JFrame {
 
     private void jButtonJoinActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonJoinActionPerformed
         try {
+            if (jTextFieldMulticastAddress.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Insira um endereço!");
+                return;
+            }
+            if (jTextFieldUsername.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Insira um nome de usuário!");
+                return;
+            }
+
+            handle = new MulticastChatHandle(this);
+
             //Instancia o Socket
-            multicastChat = new MulticastChatController(
-                    this.jTextFieldMulticastAddress.getText(),
-                    port,
-                    ttl);
-
-            //Instancia a Thread
-            rxController = new RxController(
-                    textArea,
-                    multicastChat.getSocket(),
-                    jTextFieldUsername.getText());
-
-            multicastChat.logon();
-            rxController.start();
+            MulticastChatController.getInstance()
+                    .setHandle(handle)
+                    .setUsername(jTextFieldUsername.getText())
+                    .logon(jTextFieldMulticastAddress.getText());
 
             setButtons(true);
-            textArea.append(this.jTextFieldUsername.getText() + " entrou no grupo. \n");
-
         } catch (IOException ex) {
-            this.textArea.append("\nError join group!!\nIOException: " + ex.getMessage() + "\n");
+            System.out.println(ex.getMessage());
         }
-
     }//GEN-LAST:event_jButtonJoinActionPerformed
 
     private void jButtonLeaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLeaveActionPerformed
         try {
-            multicastChat.logoff();
+            MulticastChatController.getInstance().logoff();
             setButtons(false);
-            textArea.append(this.jTextFieldUsername.getText() + " saiu do grupo. \n");
-
         } catch (IOException ex) {
-            this.textArea.append("\nError Leave group!!\nIOException: " + ex.getMessage() + "\n");
+            System.out.println(ex.getMessage());
         }
     }//GEN-LAST:event_jButtonLeaveActionPerformed
 
     private void jButtonSendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSendActionPerformed
-        if (!this.jTextFieldMessage.getText().isEmpty()) {
+        if (!jTextFieldMessage.getText().isEmpty()) {
             try {
-                this.multicastChat.sendMessage(this.jTextFieldMessage.getText());
-                this.jTextFieldMessage.setText("");
+                MulticastChatController
+                        .getInstance()
+                        .send(jTextFieldMessage.getText());
             } catch (IOException ex) {
-                this.textArea.append("\nError on send message!!\nIOException: " + ex.getMessage() + "\n");
+                System.out.println(ex.getMessage());
             }
+            jTextFieldMessage.setText(null);
         }
     }//GEN-LAST:event_jButtonSendActionPerformed
 
@@ -258,6 +250,23 @@ public class MulticastChatForm extends javax.swing.JFrame {
             }
         });
     }
+
+    public JTextArea getjTextAreaChat() {
+        return jTextAreaChat;
+    }
+
+    public void setjTextAreaChat(JTextArea jTextAreaChat) {
+        this.jTextAreaChat = jTextAreaChat;
+    }
+
+    public JTextField getjTextFieldMessage() {
+        return jTextFieldMessage;
+    }
+
+    public void setjTextFieldMessage(JTextField jTextFieldMessage) {
+        this.jTextFieldMessage = jTextFieldMessage;
+    }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonClose;

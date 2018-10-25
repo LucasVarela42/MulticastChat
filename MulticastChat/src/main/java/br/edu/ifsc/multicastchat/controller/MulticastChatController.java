@@ -16,28 +16,49 @@ import java.net.MulticastSocket;
  */
 public class MulticastChatController {
 
-    private MulticastSocket socket;
-    private InetAddress group;
-    private String groupAddress;
-    private int port;
-    private String ip;
-    private int ttl;
-    private byte[] txData;
-    private DatagramPacket txPacket;
+    private static MulticastChatController instance;
 
-    public MulticastChatController(String groupAddress, int port, int ttl) throws IOException {
-        this.groupAddress = groupAddress;
-        this.port = port;
-        this.group = InetAddress.getByName(groupAddress);
-        this.ttl = ttl;
-        this.ip = InetAddress.getLocalHost().getHostAddress();
-        this.socket = new MulticastSocket(port);
-        this.socket.setTimeToLive(ttl);
+    private MulticastChatHandle handle = null;
+    private MulticastChatReceiver receiver = null;
+    private MulticastSocket socket = null;
+    private InetAddress group = null;
+    private final int port = 50000;
+    private byte[] txData = new byte[1024];
+    private String username;
+
+    public MulticastChatController() {
     }
 
-    public void logon() throws IOException {
+    public static MulticastChatController getInstance() {
+        if (instance == null) {
+            instance = new MulticastChatController();
+        }
+        return instance;
+    }
+
+    public MulticastChatController setUsername(String username) {
+        this.username = username;
+        return instance;
+    }
+
+    public MulticastChatController setHandle(MulticastChatHandle handle) {
+        this.handle = handle;
+        return instance;
+    }
+
+    public void logon(String address) throws IOException {
         try {
+            socket = new MulticastSocket(port);
+            group = InetAddress.getByName(address);
             socket.joinGroup(group);
+
+            receiver = new MulticastChatReceiver(socket, handle);
+            receiver.start();
+
+            if (!username.isEmpty()) {
+                handle.updateChat(username + " entrou no chat!");
+            }
+
         } catch (IOException e) {
             throw new IOException("IOException in logon: " + e.getMessage());
         }
@@ -48,27 +69,34 @@ public class MulticastChatController {
             if (socket.isConnected()) {
                 socket.leaveGroup(group);
             }
+
+            if (!username.isEmpty()) {
+                handle.updateChat(username + " saiu do chat!");
+            }
+
+            receiver.interrupt();
+            receiver = null;
+
+            socket.close();
         } catch (IOException e) {
             throw new IOException("IOException in logoff: " + e.getMessage());
         }
-
-        if (!socket.isClosed()) {
-            socket.close();
-        }
-        System.out.println("Left group " + groupAddress + ":" + port);
     }
 
-    public void sendMessage(String message) throws IOException {
-        this.txData = message.getBytes();
+    public void send(String message) throws IOException {
         try {
-            this.txPacket = new DatagramPacket(this.txData, this.txData.length, this.group, this.port);
-            this.socket.send(this.txPacket);
+            txData = message.getBytes();
+            DatagramPacket txPacket = new DatagramPacket(txData, txData.length, group, port);
+            socket.send(txPacket);
+
+            if (!username.isEmpty()) {
+                message = username + " diz: " + message;
+            }
+
+            handle.updateChat(message);
         } catch (IOException e) {
             throw new IOException("IOException in send message: " + e.getMessage());
         }
     }
 
-    public MulticastSocket getSocket() {
-        return socket;
-    }
 }
