@@ -56,7 +56,8 @@ public class MulticastChatController {
             receiver.start();
 
             if (!username.isEmpty()) {
-                handle.updateChat(username + " entrou no chat!");
+                //handle.updateChat(username + " entrou no chat!");
+                send(username + " entrou no chat!");
             }
 
         } catch (IOException e) {
@@ -71,7 +72,8 @@ public class MulticastChatController {
             }
 
             if (!username.isEmpty()) {
-                handle.updateChat(username + " saiu do chat!");
+                //handle.updateChat(username + " saiu do chat!");
+                send(username + " saiu do chat!");
             }
 
             receiver.interrupt();

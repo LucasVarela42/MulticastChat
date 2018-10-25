@@ -36,13 +36,17 @@ public class MulticastChatReceiver extends Thread {
 
                 String senderAddress = rxPacket.getAddress().getCanonicalHostName();
                 String myAddress = InetAddress.getLocalHost().getCanonicalHostName();
+                
+                System.out.println(senderAddress);
+                System.out.println(myAddress);
 
                 System.out.println("recebeu pacote de " + senderAddress);
                 System.out.println("Mensagem " + received);
 
-                if (!senderAddress.equals(myAddress)) {
+                if (!senderAddress.equals(myAddress) && !myAddress.equals("debian")) {
                     handle.updateChat(received);
                 }
+                
             }
         } catch (IOException ex) {
             interrupt();
