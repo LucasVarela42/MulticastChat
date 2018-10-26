@@ -57,7 +57,7 @@ public class MulticastChatController {
 
             if (!username.isEmpty()) {
                 //handle.updateChat(username + " entrou no chat!");
-                send(username + " entrou no chat!");
+                send(username, 0);
             }
 
         } catch (IOException e) {
@@ -73,7 +73,7 @@ public class MulticastChatController {
 
             if (!username.isEmpty()) {
                 //handle.updateChat(username + " saiu do chat!");
-                send(username + " saiu do chat!");
+                send(username, 2);
             }
 
             receiver.interrupt();
@@ -85,17 +85,27 @@ public class MulticastChatController {
         }
     }
 
-    public void send(String message) throws IOException {
+    public void send(String message, int type) throws IOException {
         try {
+            switch (type) {
+                case 0:
+                    message = (message + " entrou no grupo!");
+                    break;
+                case 1:
+                    message = (username + " diz: " + message);
+                    break;
+                case 2:
+                    message = (message + " saiu do grupo!");
+                    break;
+            }
             txData = message.getBytes();
             DatagramPacket txPacket = new DatagramPacket(txData, txData.length, group, port);
             socket.send(txPacket);
 
-            if (!username.isEmpty()) {
-                message = username + " diz: " + message;
-            }
-
-            handle.updateChat(message);
+            //if (!username.isEmpty()) {
+            //   message = messageType(username, 2);
+            //}
+            //handle.updateChat(message);
         } catch (IOException e) {
             throw new IOException("IOException in send message: " + e.getMessage());
         }

@@ -17,10 +17,10 @@ import java.net.MulticastSocket;
 public class MulticastChatReceiver extends Thread {
 
     private final byte[] rxData = new byte[1024];
-    private MulticastSocket socket  = null;
+    private MulticastSocket socket = null;
     private MulticastChatHandle handle = null;
 
-    public MulticastChatReceiver(MulticastSocket socket , MulticastChatHandle handle) {
+    public MulticastChatReceiver(MulticastSocket socket, MulticastChatHandle handle) {
         this.socket = socket;
         this.handle = handle;
     }
@@ -35,18 +35,14 @@ public class MulticastChatReceiver extends Thread {
                 String received = new String(rxPacket.getData(), 0, rxPacket.getLength());
 
                 String senderAddress = rxPacket.getAddress().getCanonicalHostName();
-                String myAddress = InetAddress.getLocalHost().getCanonicalHostName();
-                
-                System.out.println(senderAddress);
-                System.out.println(myAddress);
 
                 System.out.println("recebeu pacote de " + senderAddress);
                 System.out.println("Mensagem " + received);
 
-                if (!senderAddress.equals(myAddress) && !myAddress.equals("debian")) {
+                //if (!senderAddress.equals(myAddress)) {
                     handle.updateChat(received);
-                }
-                
+                //}
+
             }
         } catch (IOException ex) {
             interrupt();

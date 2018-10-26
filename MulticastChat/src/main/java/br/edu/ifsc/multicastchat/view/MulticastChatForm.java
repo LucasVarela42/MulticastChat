@@ -196,11 +196,13 @@ public class MulticastChatForm extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonLeaveActionPerformed
 
     private void jButtonSendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSendActionPerformed
-        if (!jTextFieldMessage.getText().isEmpty()) {
+        String message = jTextFieldMessage.getText();
+        
+        if (!message.isEmpty()) {
             try {
                 MulticastChatController
                         .getInstance()
-                        .send(jTextFieldMessage.getText());
+                        .send(message, 1);
             } catch (IOException ex) {
                 System.out.println(ex.getMessage());
             }
