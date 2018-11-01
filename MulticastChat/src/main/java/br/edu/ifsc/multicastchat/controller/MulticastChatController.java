@@ -5,6 +5,7 @@
  */
 package br.edu.ifsc.multicastchat.controller;
 
+import br.edu.ifsc.multicastchat.crypto.Crypto;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -98,7 +99,7 @@ public class MulticastChatController {
                     message = (message + " saiu do grupo!");
                     break;
             }
-            txData = message.getBytes();
+            txData = Crypto.encrypt(message).getBytes(); //Message encrypted
             DatagramPacket txPacket = new DatagramPacket(txData, txData.length, group, port);
             socket.send(txPacket);
 

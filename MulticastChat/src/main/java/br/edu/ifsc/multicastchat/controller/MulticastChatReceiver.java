@@ -5,6 +5,7 @@
  */
 package br.edu.ifsc.multicastchat.controller;
 
+import br.edu.ifsc.multicastchat.crypto.Crypto;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -32,7 +33,8 @@ public class MulticastChatReceiver extends Thread {
                 DatagramPacket rxPacket = new DatagramPacket(rxData, rxData.length);
 
                 socket.receive(rxPacket);
-                String received = new String(rxPacket.getData(), 0, rxPacket.getLength());
+                
+                String received = Crypto.decrypt(new String(rxPacket.getData(), 0, rxPacket.getLength())); //Message decrypted
 
                 String senderAddress = rxPacket.getAddress().getCanonicalHostName();
 
