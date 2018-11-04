@@ -5,6 +5,7 @@
  */
 package br.edu.ifsc.multicastchat.crypto;
 
+import java.security.Key;
 import java.util.Base64;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -16,13 +17,13 @@ import javax.crypto.spec.SecretKeySpec;
  */
 public class Crypto {
 
-    private static final String KEY = "u12hUPtyGhg5WR3t"; //Verificar chave
+    private static String KEY = ""; //Verificar chave
     private static final String INIT_VECTOR = "RandomInitVector";
 
     public static String encrypt(String value) {
         try {
             IvParameterSpec iv = new IvParameterSpec(INIT_VECTOR.getBytes("UTF-8"));
-            SecretKeySpec skeySpec = new SecretKeySpec(KEY.getBytes("UTF-8"), "AES");
+            SecretKeySpec skeySpec = new SecretKeySpec(getKEY().getBytes("UTF-8"), "AES");
 
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
             cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
@@ -44,14 +45,14 @@ public class Crypto {
     public static String decrypt(String encrypted) {
         try {
             IvParameterSpec iv = new IvParameterSpec(INIT_VECTOR.getBytes("UTF-8"));
-            SecretKeySpec skeySpec = new SecretKeySpec(KEY.getBytes("UTF-8"), "AES");
+            SecretKeySpec skeySpec = new SecretKeySpec(getKEY().getBytes("UTF-8"), "AES");
 
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
             cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
 
             byte[] original = cipher.doFinal(Base64.getDecoder().decode(encrypted));
             
-            System.out.println("Decrypt");
+            System.out.println("\nDecrypt");
             System.out.println("Texto encriptado: "+encrypted);
             System.out.println("Texto original: "+new String(original));
             
@@ -59,8 +60,20 @@ public class Crypto {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-
         return null;
     }
 
+    public static String getKEY() {
+        return KEY;
+    }
+
+    public static void setKEY(String KEY) {
+        if(KEY.length() < 16){
+            while (KEY.length()<16) {                
+                KEY = KEY.concat("0");
+            }
+        }
+        Crypto.KEY = KEY;
+    }
+    
 }

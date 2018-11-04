@@ -19,6 +19,7 @@ public class MulticastChatController {
 
     private static MulticastChatController instance;
 
+    private MulticastChatConnection connection = null;
     private MulticastChatHandle handle = null;
     private MulticastChatReceiver receiver = null;
     private MulticastSocket socket = null;
@@ -49,6 +50,10 @@ public class MulticastChatController {
 
     public void logon(String address) throws IOException {
         try {
+            //Rever implementação
+            connection = new MulticastChatConnection();
+            Crypto.setKEY(connection.get());
+            
             socket = new MulticastSocket(port);
             group = InetAddress.getByName(address);
             socket.joinGroup(group);
