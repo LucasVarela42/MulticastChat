@@ -5,8 +5,10 @@
  */
 package br.edu.ifsc.multicastchat.view;
 
+import br.edu.ifsc.multicastchat.controller.MulticastChatConnection;
 import br.edu.ifsc.multicastchat.controller.MulticastChatController;
 import br.edu.ifsc.multicastchat.controller.MulticastChatHandle;
+import br.edu.ifsc.multicastchat.crypto.Crypto;
 import java.io.IOException;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
@@ -20,7 +22,11 @@ public class MulticastChatForm extends javax.swing.JFrame {
     /**
      * Creates new form MulticastChat
      */
+    
+    private MulticastChatConnection connection;
+    private Crypto crypto;
     private MulticastChatHandle handle;
+    
 
     public MulticastChatForm() {
         initComponents();
@@ -171,11 +177,14 @@ public class MulticastChatForm extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(this, "Insira um nome de usuário!");
                 return;
             }
-
+            //Verificar está implementação
+            connection = new MulticastChatConnection();
+            crypto = new Crypto(connection.getSecretKey());
             handle = new MulticastChatHandle(this);
 
             //Instancia o Socket
             MulticastChatController.getInstance()
+                    .setCrypto(crypto)
                     .setHandle(handle)
                     .setUsername(jTextFieldUsername.getText())
                     .logon(jTextFieldMulticastAddress.getText());

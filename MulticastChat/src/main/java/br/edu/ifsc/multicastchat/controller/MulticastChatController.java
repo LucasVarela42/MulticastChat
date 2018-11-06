@@ -19,7 +19,7 @@ public class MulticastChatController {
 
     private static MulticastChatController instance;
 
-    private MulticastChatConnection connection = null;
+    private Crypto crypto = null;
     private MulticastChatHandle handle = null;
     private MulticastChatReceiver receiver = null;
     private MulticastSocket socket = null;
@@ -47,22 +47,22 @@ public class MulticastChatController {
         this.handle = handle;
         return instance;
     }
+    
+    public MulticastChatController setCrypto(Crypto crypto) {
+        this.crypto = crypto;
+        return instance;
+    }
 
     public void logon(String address) throws IOException {
         try {
-            //Rever implementação
-            connection = new MulticastChatConnection();
-            Crypto.setKEY(connection.get());
-            
             socket = new MulticastSocket(port);
             group = InetAddress.getByName(address);
             socket.joinGroup(group);
 
-            receiver = new MulticastChatReceiver(socket, handle);
+            receiver = new MulticastChatReceiver(socket, handle, crypto);
             receiver.start();
 
             if (!username.isEmpty()) {
-                //handle.updateChat(username + " entrou no chat!");
                 send(username, 0);
             }
 
@@ -78,7 +78,6 @@ public class MulticastChatController {
             }
 
             if (!username.isEmpty()) {
-                //handle.updateChat(username + " saiu do chat!");
                 send(username, 2);
             }
 
@@ -104,14 +103,10 @@ public class MulticastChatController {
                     message = (message + " saiu do grupo!");
                     break;
             }
-            txData = Crypto.encrypt(message).getBytes(); //Message encrypted
+            txData = crypto.encrypt(message).getBytes(); //Message encrypted
             DatagramPacket txPacket = new DatagramPacket(txData, txData.length, group, port);
             socket.send(txPacket);
-
-            //if (!username.isEmpty()) {
-            //   message = messageType(username, 2);
-            //}
-            //handle.updateChat(message);
+            
         } catch (IOException e) {
             throw new IOException("IOException in send message: " + e.getMessage());
         }
