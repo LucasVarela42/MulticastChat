@@ -25,7 +25,7 @@ import org.json.JSONObject;
 public class MulticastChatConnection {
 
     public String getSecretKey() {
-        String httpUrl = "https://localhost:8443/key";
+        String httpUrl = "https://10.151.34.29:8443/key";
         URL url;
         String inputLine;
         StringBuffer response = new StringBuffer();
@@ -53,6 +53,18 @@ public class MulticastChatConnection {
         } catch (GeneralSecurityException e) {
             e.printStackTrace();
         }
+
+        javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier(
+                new javax.net.ssl.HostnameVerifier() {
+
+            public boolean verify(String hostname,
+                    javax.net.ssl.SSLSession sslSession) {
+                if (hostname.equals("10.151.34.29")) {
+                    return true;
+                }
+                return false;
+            }
+        });
 
         // Now you can access an https URL without having the certificate in the truststore
         try {
