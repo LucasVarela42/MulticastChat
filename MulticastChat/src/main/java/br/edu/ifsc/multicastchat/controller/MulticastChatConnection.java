@@ -12,8 +12,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import org.json.JSONObject;
@@ -25,7 +27,7 @@ import org.json.JSONObject;
 public class MulticastChatConnection {
 
     public String getSecretKey() {
-        String httpUrl = "https://10.151.34.29:8443/key";
+        String httpUrl = "https://localhost:8443/key";
         URL url;
         String inputLine;
         StringBuffer response = new StringBuffer();
@@ -54,12 +56,9 @@ public class MulticastChatConnection {
             e.printStackTrace();
         }
 
-        javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier(
-                new javax.net.ssl.HostnameVerifier() {
-
-            public boolean verify(String hostname,
-                    javax.net.ssl.SSLSession sslSession) {
-                if (hostname.equals("10.151.34.29")) {
+        HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+            public boolean verify(String hostname, SSLSession sslSession) {
+                if (hostname.equals("localhost")) {
                     return true;
                 }
                 return false;
